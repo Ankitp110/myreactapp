@@ -1,71 +1,101 @@
 plugins {
   id "com.moowork.node" version "1.2.0"
 }
-final def appName = "MYAPP"
+// final def appName = "MYAPP"
 
-apply plugin: 'war'
+// //apply plugin: 'war'
 
-war {
-  from ("${appName}/build")
-  archiveName = "${project.name}.war"
-}
+// // war {
+// //   from ("${appName}/build")
+// //   archiveName = "${project.name}.war"
+// // }
+// apply plugin: "com.moowork.node"
 
-node {
-  // Version of node to use.
-  version = '12.4.0'
+// node {
+//   // Version of node to use.
+//   version = '12.4.0'
 
-  // Version of npm to use.
-  npmVersion = '6.9.0'
+//   // Version of npm to use.
+//  // npmVersion = '6.9.0'
 
-  // If true, it will download node using above parameters.
-  // If false, it will try to use globally installed node.
-  download = false
+//   // If true, it will download node using above parameters.
+//   // If false, it will try to use globally installed node.
+//   download = false
 
-  // Set the work directory for unpacking node
-  workDir = file("${project.buildDir}/${appName}/nodejs")
+//   // Set the work directory for unpacking node
+//   //workDir = file("${project.buildDir}/${appName}/nodejs")
 
-  // Set the work directory for NPM
-  npmWorkDir = file("${project.buildDir}/${appName}/npm")
+//   // Set the work directory for NPM
+//   //npmWorkDir = file("${project.buildDir}/${appName}/npm")
 
-  // Set the work directory where node_modules should be located
-  nodeModulesDir = file("${project.projectDir}")
-}
-
-task installCreateReactApp(type: NpmTask) {
-    args = ['install', 'create-react-app', '--no-save']
-}
-
-task createApp(dependsOn: 'installCreateReactApp', type: NodeTask){
-  description 'Create React app'
-  script = file("node_modules/create-react-app/createReactApp")
-  args = [appName]
-}
-
-task buildApp(dependsOn: 'npm_install', type: NpmTask){
-    description 'Build React app'
-    args = ['run', 'build']
-   
-}
-
-// task testApp(dependsOn: 'npm_install', type: NpmTask){
-//     description 'Build React app'
-//     args = ['run', 'test']
-//     environment = ["CI":true]
-//     execOverrides {
-//         it.workingDir = appName
-//     }
+//   // Set the work directory where node_modules should be located
+//   //nodeModulesDir = file("${project.projectDir}")
 // }
 
-task serveApp(dependsOn: 'npm_install', type: NpmTask){
-    description 'Serve React app'
-    args = ['run', 'start']
-}
+// // task installCreateReactApp(type: NpmTask) {
+// //     args = ['install', 'create-react-app', '--no-save']
+// // }
 
-clean {
-  delete file("${project.buildDir}")
-  delete file("${appName}/build")
+// // task createApp(dependsOn: 'installCreateReactApp', type: NodeTask){
+// //   description 'Create React app'
+// //   script = file("node_modules/create-react-app/createReactApp")
+// //   args = [appName]
+// // }
+
+// task buildApp(dependsOn: 'npmInstall', type: NpmTask){
+//     description 'Build React app'
+//     args = ['run', 'build']
+   
+// }
+
+// // task testApp(dependsOn: 'npm_install', type: NpmTask){
+// //     description 'Build React app'
+// //     args = ['run', 'test']
+// //     environment = ["CI":true]
+// //     execOverrides {
+// //         it.workingDir = appName
+// //     }
+// // }
+
+// task uiTest(type: NpmTask) {
+//   environment = [‘CI’: true]
+//   args = ['run','test']
+// }
+
+// task serveApp(dependsOn: 'npmInstall', type: NpmTask){
+//     description 'Serve React app'
+//     args = ['start']
+// }
+
+// // clean {
+// //   delete file("${project.buildDir}")
+// //   delete file("${appName}/build")
+// // }
+// //test.dependsOn testApp
+// //war.dependsOn buildApp
+// //build.dependsOn buildApp
+// task start(dependsOn: 'serveApp')
+
+apply plugin:'war'
+apply plugin:'com.moowork.node'
+project.webAppDirName = './'
+ 
+war{
+  exclude '**/*..gradle'
 }
-//test.dependsOn testApp
-war.dependsOn buildApp
-build.dependsOn buildApp
-task start(dependsOn: 'serveApp')
+node {
+  version='12.4.0'
+  download=false
+}
+task bundle(type: NpmTask, dependsOn: npmInstall) {
+args = ['run','build']
+}
+task uiTest(type: NpmTask) {
+environment = ['CI': true]
+args = ['run','test']
+}
+task run(type: NpmTask) {
+args = ['start']
+}
+check.dependsOn(test)
+war.dependsOn(bundle)
